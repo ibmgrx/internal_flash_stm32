@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00003a38  080001bc  080001bc  000101bc  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000090  08003bf4  08003bf4  00013bf4  2**2
+  2 .rodata       00000088  08003bf4  08003bf4  00013bf4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  08003c84  08003c84  0002002c  2**0
+  3 .ARM.extab    00000000  08003c7c  08003c7c  0002002c  2**0
                   CONTENTS
-  4 .ARM          00000008  08003c84  08003c84  00013c84  2**2
+  4 .ARM          00000008  08003c7c  08003c7c  00013c7c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  5 .preinit_array 00000000  08003c8c  08003c8c  0002002c  2**0
+  5 .preinit_array 00000000  08003c84  08003c84  0002002c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08003c8c  08003c8c  00013c8c  2**2
+  6 .init_array   00000004  08003c84  08003c84  00013c84  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08003c90  08003c90  00013c90  2**2
+  7 .fini_array   00000004  08003c88  08003c88  00013c88  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         0000002c  20000000  08003c94  00020000  2**2
+  8 .data         0000002c  20000000  08003c8c  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000000b4  2000002c  08003cc0  0002002c  2**2
+  9 .bss          000000b4  2000002c  08003cb8  0002002c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  200000e0  08003cc0  000200e0  2**0
+ 10 ._user_heap_stack 00000600  200000e0  08003cb8  000200e0  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0002002c  2**0
                   CONTENTS, READONLY
@@ -710,12 +710,12 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 
     // Contoh penggunaan untuk menulis dan membaca kalimat
-    const char* my_string = "ASTAGHFIRULLAHAL'ADZIM.......";
- 8000716:	4b19      	ldr	r3, [pc, #100]	; (800077c <main+0x7c>)
+    const char* my_string = "ASTAGHFIRULLAHAL'ADZIM";
+ 8000716:	4b18      	ldr	r3, [pc, #96]	; (8000778 <main+0x78>)
  8000718:	647b      	str	r3, [r7, #68]	; 0x44
     if (Write_Flash_String(FLASH_USER_STR_ADDR, my_string) == HAL_OK)
  800071a:	6c79      	ldr	r1, [r7, #68]	; 0x44
- 800071c:	4818      	ldr	r0, [pc, #96]	; (8000780 <main+0x80>)
+ 800071c:	4817      	ldr	r0, [pc, #92]	; (800077c <main+0x7c>)
  800071e:	f7ff ff62 	bl	80005e6 <Write_Flash_String>
  8000722:	4603      	mov	r3, r0
  8000724:	2b00      	cmp	r3, #0
@@ -726,7 +726,7 @@ int main(void) {
  8000728:	463b      	mov	r3, r7
  800072a:	2232      	movs	r2, #50	; 0x32
  800072c:	4619      	mov	r1, r3
- 800072e:	4814      	ldr	r0, [pc, #80]	; (8000780 <main+0x80>)
+ 800072e:	4813      	ldr	r0, [pc, #76]	; (800077c <main+0x7c>)
  8000730:	f7ff ffa1 	bl	8000676 <Read_Flash_String>
         if (strcmp(read_string, my_string) == 0)
  8000734:	463b      	mov	r3, r7
@@ -738,51 +738,51 @@ int main(void) {
     }
 
     // Contoh penggunaan untuk menulis dan membaca integer
-    int32_t my_integer = 12345;
- 800073e:	f243 0339 	movw	r3, #12345	; 0x3039
- 8000742:	643b      	str	r3, [r7, #64]	; 0x40
+    int32_t my_integer = 12345678;
+ 800073e:	4b10      	ldr	r3, [pc, #64]	; (8000780 <main+0x80>)
+ 8000740:	643b      	str	r3, [r7, #64]	; 0x40
     if (Write_Flash_Integer(FLASH_USER_INT_ADDR, my_integer) == HAL_OK)
- 8000744:	6c39      	ldr	r1, [r7, #64]	; 0x40
- 8000746:	480f      	ldr	r0, [pc, #60]	; (8000784 <main+0x84>)
- 8000748:	f7ff fee8 	bl	800051c <Write_Flash_Integer>
- 800074c:	4603      	mov	r3, r0
- 800074e:	2b00      	cmp	r3, #0
- 8000750:	d103      	bne.n	800075a <main+0x5a>
+ 8000742:	6c39      	ldr	r1, [r7, #64]	; 0x40
+ 8000744:	480f      	ldr	r0, [pc, #60]	; (8000784 <main+0x84>)
+ 8000746:	f7ff fee9 	bl	800051c <Write_Flash_Integer>
+ 800074a:	4603      	mov	r3, r0
+ 800074c:	2b00      	cmp	r3, #0
+ 800074e:	d103      	bne.n	8000758 <main+0x58>
     {
         int32_t read_integer = Read_Flash_Integer(FLASH_USER_INT_ADDR);
- 8000752:	480c      	ldr	r0, [pc, #48]	; (8000784 <main+0x84>)
- 8000754:	f7ff fefe 	bl	8000554 <Read_Flash_Integer>
- 8000758:	63f8      	str	r0, [r7, #60]	; 0x3c
+ 8000750:	480c      	ldr	r0, [pc, #48]	; (8000784 <main+0x84>)
+ 8000752:	f7ff feff 	bl	8000554 <Read_Flash_Integer>
+ 8000756:	63f8      	str	r0, [r7, #60]	; 0x3c
             // Berhasil menulis dan membaca integer
         }
     }
 
     // Contoh penggunaan untuk menulis dan membaca float
     float my_float = 3.14159f;
- 800075a:	4b0b      	ldr	r3, [pc, #44]	; (8000788 <main+0x88>)
- 800075c:	63bb      	str	r3, [r7, #56]	; 0x38
+ 8000758:	4b0b      	ldr	r3, [pc, #44]	; (8000788 <main+0x88>)
+ 800075a:	63bb      	str	r3, [r7, #56]	; 0x38
     if (Write_Flash_Float(FLASH_USER_FLOAT_ADDR, my_float) == HAL_OK)
- 800075e:	ed97 0a0e 	vldr	s0, [r7, #56]	; 0x38
- 8000762:	480a      	ldr	r0, [pc, #40]	; (800078c <main+0x8c>)
- 8000764:	f7ff ff08 	bl	8000578 <Write_Flash_Float>
- 8000768:	4603      	mov	r3, r0
- 800076a:	2b00      	cmp	r3, #0
- 800076c:	d104      	bne.n	8000778 <main+0x78>
+ 800075c:	ed97 0a0e 	vldr	s0, [r7, #56]	; 0x38
+ 8000760:	480a      	ldr	r0, [pc, #40]	; (800078c <main+0x8c>)
+ 8000762:	f7ff ff09 	bl	8000578 <Write_Flash_Float>
+ 8000766:	4603      	mov	r3, r0
+ 8000768:	2b00      	cmp	r3, #0
+ 800076a:	d104      	bne.n	8000776 <main+0x76>
     {
         float read_float = Read_Flash_Float(FLASH_USER_FLOAT_ADDR);
- 800076e:	4807      	ldr	r0, [pc, #28]	; (800078c <main+0x8c>)
- 8000770:	f7ff ff21 	bl	80005b6 <Read_Flash_Float>
- 8000774:	ed87 0a0d 	vstr	s0, [r7, #52]	; 0x34
+ 800076c:	4807      	ldr	r0, [pc, #28]	; (800078c <main+0x8c>)
+ 800076e:	f7ff ff22 	bl	80005b6 <Read_Flash_Float>
+ 8000772:	ed87 0a0d 	vstr	s0, [r7, #52]	; 0x34
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
- 8000778:	e7fe      	b.n	8000778 <main+0x78>
- 800077a:	bf00      	nop
- 800077c:	08003bf4 	.word	0x08003bf4
- 8000780:	08080020 	.word	0x08080020
+ 8000776:	e7fe      	b.n	8000776 <main+0x76>
+ 8000778:	08003bf4 	.word	0x08003bf4
+ 800077c:	08080020 	.word	0x08080020
+ 8000780:	00bc614e 	.word	0x00bc614e
  8000784:	08080040 	.word	0x08080040
  8000788:	40490fd0 	.word	0x40490fd0
  800078c:	08080060 	.word	0x08080060
@@ -1521,7 +1521,7 @@ LoopForever:
   ldr r1, =_edata
  8000ac4:	2000002c 	.word	0x2000002c
   ldr r2, =_sidata
- 8000ac8:	08003c94 	.word	0x08003c94
+ 8000ac8:	08003c8c 	.word	0x08003c8c
   ldr r2, =_sbss
  8000acc:	2000002c 	.word	0x2000002c
   ldr r4, =_ebss
@@ -3832,7 +3832,7 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
  80017e0:	6013      	str	r3, [r2, #0]
  80017e2:	e013      	b.n	800180c <HAL_RCC_OscConfig+0x29c>
  80017e4:	40021000 	.word	0x40021000
- 80017e8:	08003c14 	.word	0x08003c14
+ 80017e8:	08003c0c 	.word	0x08003c0c
  80017ec:	20000000 	.word	0x20000000
  80017f0:	20000004 	.word	0x20000004
  80017f4:	4b8f      	ldr	r3, [pc, #572]	; (8001a34 <HAL_RCC_OscConfig+0x4c4>)
@@ -5442,7 +5442,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
  80020c4:	40022000 	.word	0x40022000
  80020c8:	40021000 	.word	0x40021000
  80020cc:	04c4b400 	.word	0x04c4b400
- 80020d0:	08003c14 	.word	0x08003c14
+ 80020d0:	08003c0c 	.word	0x08003c0c
  80020d4:	20000000 	.word	0x20000000
  80020d8:	20000004 	.word	0x20000004
 
@@ -5647,7 +5647,7 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  80021e0:	4770      	bx	lr
  80021e2:	bf00      	nop
  80021e4:	40021000 	.word	0x40021000
- 80021e8:	08003c2c 	.word	0x08003c2c
+ 80021e8:	08003c24 	.word	0x08003c24
  80021ec:	00f42400 	.word	0x00f42400
  80021f0:	007a1200 	.word	0x007a1200
 
@@ -5696,7 +5696,7 @@ uint32_t HAL_RCC_GetPCLK1Freq(void)
  800222c:	4618      	mov	r0, r3
  800222e:	bd80      	pop	{r7, pc}
  8002230:	40021000 	.word	0x40021000
- 8002234:	08003c24 	.word	0x08003c24
+ 8002234:	08003c1c 	.word	0x08003c1c
 
 08002238 <HAL_RCC_GetPCLK2Freq>:
   * @note   Each time PCLK2 changes, this function must be called to update the
@@ -5723,7 +5723,7 @@ uint32_t HAL_RCC_GetPCLK2Freq(void)
  8002258:	4618      	mov	r0, r3
  800225a:	bd80      	pop	{r7, pc}
  800225c:	40021000 	.word	0x40021000
- 8002260:	08003c24 	.word	0x08003c24
+ 8002260:	08003c1c 	.word	0x08003c1c
 
 08002264 <RCC_SetFlashLatencyFromMSIRange>:
             voltage range.
@@ -6005,7 +6005,7 @@ static uint32_t RCC_GetSysClockFreqFromPLLSource(void)
  80023d4:	40021000 	.word	0x40021000
  80023d8:	00f42400 	.word	0x00f42400
  80023dc:	007a1200 	.word	0x007a1200
- 80023e0:	08003c2c 	.word	0x08003c2c
+ 80023e0:	08003c24 	.word	0x08003c24
 
 080023e4 <HAL_RCCEx_PeriphCLKConfig>:
   *         the RTC clock source: in this case the access to Backup domain is enabled.
@@ -8864,7 +8864,7 @@ HAL_StatusTypeDef UART_SetConfig(UART_HandleTypeDef *huart)
  80034e6:	bf00      	nop
  80034e8:	40008000 	.word	0x40008000
  80034ec:	00f42400 	.word	0x00f42400
- 80034f0:	08003c5c 	.word	0x08003c5c
+ 80034f0:	08003c54 	.word	0x08003c54
       }
       else
       {
@@ -10016,8 +10016,8 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8003b58:	f85d 7b04 	ldr.w	r7, [sp], #4
  8003b5c:	4770      	bx	lr
  8003b5e:	bf00      	nop
- 8003b60:	08003c74 	.word	0x08003c74
- 8003b64:	08003c7c 	.word	0x08003c7c
+ 8003b60:	08003c6c 	.word	0x08003c6c
+ 8003b64:	08003c74 	.word	0x08003c74
 
 08003b68 <memset>:
  8003b68:	4402      	add	r2, r0
@@ -10054,10 +10054,10 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8003baa:	4798      	blx	r3
  8003bac:	3601      	adds	r6, #1
  8003bae:	e7f2      	b.n	8003b96 <__libc_init_array+0x1e>
- 8003bb0:	08003c8c 	.word	0x08003c8c
- 8003bb4:	08003c8c 	.word	0x08003c8c
- 8003bb8:	08003c8c 	.word	0x08003c8c
- 8003bbc:	08003c90 	.word	0x08003c90
+ 8003bb0:	08003c84 	.word	0x08003c84
+ 8003bb4:	08003c84 	.word	0x08003c84
+ 8003bb8:	08003c84 	.word	0x08003c84
+ 8003bbc:	08003c88 	.word	0x08003c88
 
 08003bc0 <memcpy>:
  8003bc0:	440a      	add	r2, r1

@@ -224,7 +224,7 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 
     // Contoh penggunaan untuk menulis dan membaca kalimat
-    const char* my_string = "ASTAGHFIRULLAHAL'ADZIM.......";
+    const char* my_string = "ASTAGHFIRULLAHAL'ADZIM";
     if (Write_Flash_String(FLASH_USER_STR_ADDR, my_string) == HAL_OK)
     {
         char read_string[50];
@@ -236,7 +236,7 @@ int main(void) {
     }
 
     // Contoh penggunaan untuk menulis dan membaca integer
-    int32_t my_integer = 12345;
+    int32_t my_integer = 12345678;
     if (Write_Flash_Integer(FLASH_USER_INT_ADDR, my_integer) == HAL_OK)
     {
         int32_t read_integer = Read_Flash_Integer(FLASH_USER_INT_ADDR);
