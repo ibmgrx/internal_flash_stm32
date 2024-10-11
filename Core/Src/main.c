@@ -28,6 +28,10 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 #define FLASH_USER_START_ADDR   0x08080000   // Alamat awal dari User Flash memory
+#define FLASH_USER_STR_ADDR     0x08080020   // Alamat untuk menyimpan string
+#define FLASH_USER_INT_ADDR     0x08080040   // Alamat untuk menyimpan integer
+#define FLASH_USER_FLOAT_ADDR   0x08080060   // Alamat untuk menyimpan float
+
 #define FLASH_USER_END_ADDR     0x080807FF   // Alamat akhir dari User Flash memory
 #define DATA_TO_WRITE           "ASTAGHFIRULLAHAL'ADZIM......."      // Data yang akan ditulis
 
@@ -63,6 +67,97 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Fungsi untuk menulis integer ke flash
+HAL_StatusTypeDef Write_Flash_Integer(uint32_t start_address, int32_t data)
+{
+    HAL_FLASH_Unlock();
+    uint64_t data64 = (uint64_t)data;
+    HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, start_address, data64);
+    HAL_FLASH_Lock();
+    return status;
+}
+
+// Fungsi untuk membaca integer dari flash
+int32_t Read_Flash_Integer(uint32_t start_address)
+{
+    uint64_t data64 = *(__IO uint64_t *)start_address;
+    int32_t data32 = (int32_t)(data64 & 0xFFFFFFFF);
+    return data32;
+}
+
+// Fungsi untuk menulis float ke flash
+HAL_StatusTypeDef Write_Flash_Float(uint32_t start_address, float data)
+{
+    HAL_FLASH_Unlock();
+    uint64_t data64 = 0;
+    memcpy(&data64, &data, sizeof(float));
+    HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, start_address, data64);
+    HAL_FLASH_Lock();
+    return status;
+}
+
+// Fungsi untuk membaca float dari flash
+float Read_Flash_Float(uint32_t start_address)
+{
+    uint64_t data64 = *(__IO uint64_t *)start_address;
+    float data_float = 0.0f;
+    memcpy(&data_float, &data64, sizeof(float));
+    return data_float;
+}
+
+// Fungsi untuk menulis string ke flash
+HAL_StatusTypeDef Write_Flash_String(uint32_t start_address, const char* data)
+{
+    HAL_FLASH_Unlock();
+    uint64_t data64 = 0;
+    size_t len = strlen(data);
+
+    // Tulis data string dalam blok 64-bit
+    for (size_t i = 0; i < len; i += 8)
+    {
+        // Copy 8 byte dari string ke data64, atau sisa byte jika kurang dari 8
+        memcpy(&data64, &data[i], (len - i) >= 8 ? 8 : (len - i));
+
+        // Tulis blok 64-bit ke flash
+        HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, start_address + i, data64);
+        if (status != HAL_OK)
+        {
+            HAL_FLASH_Lock();
+            return status;
+        }
+
+        data64 = 0; // Reset data64 untuk blok berikutnya
+    }
+
+    HAL_FLASH_Lock();
+    return HAL_OK;
+}
+
+// Fungsi untuk membaca string dari flash
+void Read_Flash_String(uint32_t start_address, char* buffer, size_t max_len)
+{
+    uint64_t data64 = 0;
+    size_t i = 0;
+
+    // Membaca data string dari flash dalam blok 64-bit
+    while (i < max_len)
+    {
+        data64 = *(__IO uint64_t *)(start_address + i);
+
+        // Copy data dari flash ke buffer string
+        memcpy(&buffer[i], &data64, (max_len - i) >= 8 ? 8 : (max_len - i));
+        i += 8;
+
+        // Hentikan jika null-terminator ditemukan
+        if (strchr((char*)&data64, '\0') != NULL)
+        {
+            break;
+        }
+    }
+
+    // Pastikan buffer memiliki null terminator
+    buffer[max_len - 1] = '\0';
+}
 
 /**
   * @brief  Fungsi untuk menghapus sektor flash pada STM32.
@@ -127,78 +222,39 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_USART1_UART_Init();
 	/* USER CODE BEGIN 2 */
-    // Unlock flash memory untuk operasi tulis
-    HAL_FLASH_Unlock();
 
-    // Menghapus halaman flash sebelum menulis
-    EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.Page = (FLASH_USER_START_ADDR - FLASH_BASE) / FLASH_PAGE_SIZE;
-    EraseInitStruct.NbPages = 1;
-
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &PageError) != HAL_OK)
+    // Contoh penggunaan untuk menulis dan membaca kalimat
+    const char* my_string = "ASTAGHFIRULLAHAL'ADZIM.......";
+    if (Write_Flash_String(FLASH_USER_STR_ADDR, my_string) == HAL_OK)
     {
-        // Jika terjadi kesalahan dalam menghapus flash
-        while (1);
-    }
-
-    // Menulis string ke flash dalam blok 64-bit
-    Address = FLASH_USER_START_ADDR;
-    uint64_t data64 = 0;
-    size_t len = strlen(DATA_TO_WRITE);
-
-    // Menulis string ke dalam flash per 8 byte (64-bit)
-    for (size_t i = 0; i < len; i += 8)
-    {
-        // Ambil 8 byte dari string atau sisa byte jika kurang dari 8
-        memcpy(&data64, &DATA_TO_WRITE[i], (len - i) >= 8 ? 8 : (len - i));
-
-        // Tulis blok 64-bit ke flash
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, Address, data64) != HAL_OK)
+        char read_string[50];
+        Read_Flash_String(FLASH_USER_STR_ADDR, read_string, sizeof(read_string));
+        if (strcmp(read_string, my_string) == 0)
         {
-            // Jika terjadi kesalahan dalam menulis flash
-            while (1);
+            // Berhasil menulis dan membaca string
         }
-
-        // Update alamat untuk blok berikutnya
-        Address += 8;
-
-        // Reset data64 untuk blok berikutnya
-        data64 = 0;
     }
 
-    // Mengunci kembali flash memory setelah operasi
-    HAL_FLASH_Lock();
-
-    // Membaca kembali data dari flash dan menampilkannya
-    char read_data[len + 1];
-    Address = FLASH_USER_START_ADDR;
-
-    // Membaca string dari flash dalam blok 64-bit
-    for (size_t i = 0; i < len; i += 8)
+    // Contoh penggunaan untuk menulis dan membaca integer
+    int32_t my_integer = 12345;
+    if (Write_Flash_Integer(FLASH_USER_INT_ADDR, my_integer) == HAL_OK)
     {
-        // Baca 8 byte (64-bit) dari flash
-        data64 = *(__IO uint64_t *)Address;
-
-        // Salin data ke buffer string
-        memcpy(&read_data[i], &data64, (len - i) >= 8 ? 8 : (len - i));
-
-        // Update alamat untuk blok berikutnya
-        Address += 8;
+        int32_t read_integer = Read_Flash_Integer(FLASH_USER_INT_ADDR);
+        if (read_integer == my_integer)
+        {
+            // Berhasil menulis dan membaca integer
+        }
     }
 
-    // Pastikan string berakhir dengan null terminator
-    read_data[len] = '\0';
-
-    // Verifikasi apakah string yang ditulis dan dibaca sama
-    if (strcmp(read_data, DATA_TO_WRITE) == 0)
+    // Contoh penggunaan untuk menulis dan membaca float
+    float my_float = 3.14159f;
+    if (Write_Flash_Float(FLASH_USER_FLOAT_ADDR, my_float) == HAL_OK)
     {
-        // Berhasil menulis dan membaca
-        // Lakukan sesuatu, misalnya menghidupkan LED sebagai indikator
-    }
-    else
-    {
-        // Gagal menulis atau membaca data
-        while (1);
+        float read_float = Read_Flash_Float(FLASH_USER_FLOAT_ADDR);
+        if (read_float == my_float)
+        {
+            // Berhasil menulis dan membaca float
+        }
     }
 
 
